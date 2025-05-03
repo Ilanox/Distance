@@ -1,25 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Flight Distance Calculator</title>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flight Distance Calculator</title>
   <style>
-    body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; }
-    input, button { padding: 0.5em; width: 100%; margin: 0.5em 0; }
-    small { color: gray; }
-    .location-box { margin-top: 1em; padding: 1em; background: #f0f0f0; border-radius: 8px; }
+    :root {
+      color-scheme: light dark;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 1em;
+      max-width: 600px;
+      margin: auto;
+      line-height: 1.5;
+    }
+
+    input, button {
+      padding: 0.75em;
+      width: 100%;
+      margin-top: 0.5em;
+      margin-bottom: 1em;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    small {
+      display: block;
+      color: gray;
+      margin-bottom: 1em;
+    }
+
+    .location-box {
+      margin-top: 1.5em;
+      padding: 1em;
+      background: #f0f0f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+
+      input, button {
+        background-color: #1e1e1e;
+        color: #f0f0f0;
+        border-color: #444;
+      }
+
+      .location-box {
+        background: #1e1e1e;
+        border: 1px solid #333;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Flight Distance Calculator</h1>
-  <p>This tool calculates the straight-line (flight) distance from your location to a Google Maps location.</p>
+  <p>Calculate the flight (straight-line) distance between your location and a Google Maps link.</p>
 
-  <label for="mapUrl">Paste a Google Maps URL (must contain coordinates):</label>
-  <input id="mapUrl" type="text" placeholder="https://www.google.com/maps/place/@32.0853,34.7818,17z" />
+  <label for="mapUrl"><strong>Google Maps URL:</strong></label>
+  <input id="mapUrl" type="text" placeholder="Paste a full Google Maps URL here" />
 
   <small>
-    Tip: If you have a <code>maps.app.goo.gl</code> link, open it first in a browser,
-    then copy the full Google Maps URL from the address bar.
+    If you have a <code>maps.app.goo.gl</code> short link, open it in a browser first and then copy the full link from the address bar.
   </small>
 
   <button onclick="calculateDistance()">Calculate Distance</button>
