@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flight Distance Calculator</title>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; }
+    input, button { padding: 0.5em; width: 100%; margin: 0.5em 0; }
+    small { color: gray; }
+    .location-box { margin-top: 1em; padding: 1em; background: #f0f0f0; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Flight Distance Calculator</h1>
+  <p>This tool calculates the straight-line (flight) distance from your location to a Google Maps location.</p>
+
+  <label for="mapUrl">Paste a Google Maps URL (must contain coordinates):</label>
+  <input id="mapUrl" type="text" placeholder="https://www.google.com/maps/place/@32.0853,34.7818,17z" />
+
+  <small>
+    Tip: If you have a <code>maps.app.goo.gl</code> link, open it first in a browser,
+    then copy the full Google Maps URL from the address bar.
+  </small>
+
+  <button onclick="calculateDistance()">Calculate Distance</button>
+
+  <p id="output"></p>
+
+  <div class="location-box" id="details" style="display:none;">
+    <strong>Your Location:</strong>
+    <p id="userAddress"></p>
+
+    <strong>Destination Location:</strong>
+    <p id="mapAddress"></p>
+  </div>
+
+  <script>
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const toRad = x => x * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function extractCoords(url) {
+      let match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (match) {
+        return { lat: parseFloat(match[1]), lon: parseFloat(match[2]) };
+      }
+      return null;
+    }
+
+    async function reverseGeocode(lat, lon) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+        headers: { 'User-Agent': 'FlightDistanceCalc/1.0' }
+      });
+      const data = await res.json();
+      return data.display_name || 'Unknown location';
+    }
+
+    async function calculateDistance() {
+      const output = document.getElementById('output');
+      const details = document.getElementById('details');
+      const userAddress = document.getElementById('userAddress');
+      const mapAddress = document.getElementById('mapAddress');
+
+      const url = document.getElementById('mapUrl').value.trim();
+      const dest = extractCoords(url);
+
+      if (!dest) {
+        output.textContent = 'Could not extract coordinates from the URL.';
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        output.textContent = 'Geolocation is not supported by your browser.';
+        return;
+      }
+
+      output.textContent = 'Getting your location...';
+      details.style.display = 'none';
+
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const userLat = pos.coords.latitude;
+        const userLon = pos.coords.longitude;
+        const dist = haversine(userLat, userLon, dest.lat, dest.lon);
+        output.textContent = `Distance: ${dist.toFixed(2)} km`;
+
+        const [userLoc, destLoc] = await Promise.all([
+          reverseGeocode(userLat, userLon),
+          reverseGeocode(dest.lat, dest.lon)
+        ]);
+
+        userAddress.textContent = userLoc;
+        mapAddress.textContent = destLoc;
+        details.style.display = 'block';
+      }, err => {
+        output.textContent = 'Error getting your location: ' + err.message;
+      });
+    }
+  </script>
+</body>
+</html>
