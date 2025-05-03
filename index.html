@@ -96,7 +96,7 @@
 
   <script>
     function haversine(lat1, lon1, lat2, lon2) {
-      const R = 6371;
+      const R = 6371000; // Radius of Earth in meters
       const toRad = x => x * Math.PI / 180;
       const dLat = toRad(lat2 - lat1);
       const dLon = toRad(lon2 - lon1);
@@ -104,7 +104,7 @@
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                 Math.sin(dLon / 2) ** 2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
+      return R * c; // returns distance in meters
     }
 
     function extractCoords(url) {
@@ -128,8 +128,9 @@
       const details = document.getElementById('details');
       const userAddress = document.getElementById('userAddress');
       const mapAddress = document.getElementById('mapAddress');
+      const mapUrlInput = document.getElementById('mapUrl');
 
-      const url = document.getElementById('mapUrl').value.trim();
+      const url = mapUrlInput.value.trim();
       const dest = extractCoords(url);
 
       if (!dest) {
@@ -150,8 +151,10 @@
           const userLat = pos.coords.latitude;
           const userLon = pos.coords.longitude;
 
-          const dist = haversine(userLat, userLon, dest.lat, dest.lon);
-          output.textContent = `Distance: ${dist.toFixed(2)} km`;
+          const distInMeters = haversine(userLat, userLon, dest.lat, dest.lon);
+          const distInKm = distInMeters / 1000; // Convert meters to kilometers
+
+          output.textContent = `Distance: ${distInMeters.toFixed(0)} meters (${distInKm.toFixed(2)} km)`;
 
           details.style.display = 'block';
           userAddress.textContent = 'Loading your address...';
@@ -164,6 +167,9 @@
 
           userAddress.textContent = userLoc;
           mapAddress.textContent = destLoc;
+
+          // Clear input field after calculation
+          mapUrlInput.value = '';
         },
         err => {
           output.textContent = 'Error getting your location: ' + err.message;
