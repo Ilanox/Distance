@@ -88,10 +88,10 @@
 
   <div class="location-box" id="details" style="display:none;">
     <strong>Your Location:</strong>
-    <p id="userAddress"></p>
+    <p id="userAddress">Loading your address...</p>
 
     <strong>Destination Location:</strong>
-    <p id="mapAddress"></p>
+    <p id="mapAddress">Loading destination address...</p>
   </div>
 
   <script>
@@ -145,23 +145,31 @@
       output.textContent = 'Getting your location...';
       details.style.display = 'none';
 
-      navigator.geolocation.getCurrentPosition(async pos => {
-        const userLat = pos.coords.latitude;
-        const userLon = pos.coords.longitude;
-        const dist = haversine(userLat, userLon, dest.lat, dest.lon);
-        output.textContent = `Distance: ${dist.toFixed(2)} km`;
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const userLat = pos.coords.latitude;
+          const userLon = pos.coords.longitude;
 
-        const [userLoc, destLoc] = await Promise.all([
-          reverseGeocode(userLat, userLon),
-          reverseGeocode(dest.lat, dest.lon)
-        ]);
+          const dist = haversine(userLat, userLon, dest.lat, dest.lon);
+          output.textContent = `Distance: ${dist.toFixed(2)} km`;
 
-        userAddress.textContent = userLoc;
-        mapAddress.textContent = destLoc;
-        details.style.display = 'block';
-      }, err => {
-        output.textContent = 'Error getting your location: ' + err.message;
-      });
+          details.style.display = 'block';
+          userAddress.textContent = 'Loading your address...';
+          mapAddress.textContent = 'Loading destination address...';
+
+          const [userLoc, destLoc] = await Promise.all([
+            reverseGeocode(userLat, userLon),
+            reverseGeocode(dest.lat, dest.lon)
+          ]);
+
+          userAddress.textContent = userLoc;
+          mapAddress.textContent = destLoc;
+        },
+        err => {
+          output.textContent = 'Error getting your location: ' + err.message;
+        },
+        { enableHighAccuracy: true }
+      );
     }
   </script>
 </body>
